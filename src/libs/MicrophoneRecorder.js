@@ -61,7 +61,9 @@ export class MicrophoneRecorder {
           stream = str;
 
           mediaRecorder = new MediaStreamRecorder(str);
-          mediaRecorder.mimeType = 'audio/wav';
+          mediaRecorder.mimeType = mediaOptions.mimeType;
+          mediaRecorder.bufferSize = mediaOptions.bufferSize;
+          mediaRecorder.sampleRate = mediaOptions.sampleRate;
           if (onStartCallback) {
             onStartCallback();
           }

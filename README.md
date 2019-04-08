@@ -52,6 +52,8 @@ Check out the [demo](https://www.voicerecordpro.com/#/record).
   strokeColor={string}     // sound wave color
   backgroundColor={string} // background color
   mimeType={string}        // defaults -> audio/wav. 
+  bufferSize={number}      // defaults -> 2048. You can set following bufferSize values: 0, 256, 512, 1024, 2048, 4096, 8192, and 16384. 
+  sampleRate={number}      // defaults -> 44100. It accepts values only in range: 22050 to 96000 
 />
 
 ```

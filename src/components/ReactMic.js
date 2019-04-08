@@ -117,7 +117,9 @@ ReactMic.propTypes = {
   height          : number,
   record          : bool.isRequired,
   onStop          : func,
-  onData          : func
+  onData          : func,
+  bufferSize      : PropTypes.number([0, 256, 512, 1024, 2048, 4096, 8192, 16384]),
+  sampleRate      : PropTypes.number,
 };
 
 ReactMic.defaultProps = {
@@ -126,6 +128,8 @@ ReactMic.defaultProps = {
   className         : 'visualizer',
   audioBitsPerSecond: 128000,
   mimeType          : 'audio/wav',
+  bufferSize        : 2048,
+  sampleRate        : 44100,
   record            : false,
   width             : 640,
   height            : 100,
