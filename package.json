@@ -1,8 +1,8 @@
 {
   "name": "@cleandersonlobo/react-mic",
   "version": "1.0.0",
-  "description": "Record audio from your microphone and display as a sound oscillation (wrapper  react-mic)",
-  "author": "cleandersonlobo",
+  "description": "Record audio from your microphone and display as a sound oscillation (wrapper react-mic)",
+  "author": "Cleanderson Lobo",
   "license": "MIT",
   "repository": "https://github.com/cleandersonlobo/react-mic",
   "main": "dist/index.js",
@@ -12,6 +12,13 @@
     "node": ">=8",
     "npm": ">=5"
   },
+  "keywords": [
+    "react",
+    "react-component",
+    "microphone",
+    "MediaRecorder",
+    "volume meter"
+  ],
   "scripts": {
     "test": "cross-env CI=1 react-scripts test --env=jsdom",
     "test:watch": "react-scripts test --env=jsdom",
@@ -53,7 +60,8 @@
     "rollup-plugin-node-resolve": "^3.3.0",
     "rollup-plugin-peer-deps-external": "^2.2.0",
     "rollup-plugin-postcss": "^1.6.2",
-    "rollup-plugin-url": "^1.4.0"
+    "rollup-plugin-url": "^1.4.0",
+    "msr": "https://github.com/cleandersonlobo/MediaStreamRecorder.git"
   },
   "files": [
     "dist"
