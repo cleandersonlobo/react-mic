@@ -1,6 +1,8 @@
 /* eslint-disable class-methods-use-this */
 import MediaStreamRecorder from 'msr';
 import AudioContext from './AudioContext';
+import { Recorder } from './vmsg';
+import wasmURL from './vmsg.wasm';
 
 let analyser;
 let audioCtx;
@@ -15,6 +17,7 @@ let onStopCallback;
 let onSaveCallback;
 let onDataCallback;
 
+const shimURL = 'https://unpkg.com/wasm-polyfill.js@0.2.0/wasm-polyfill.js';
 const constraints = { audio: true }; // constraints - only audio needed
 
 navigator.getUserMedia =
@@ -108,7 +111,7 @@ export class MicrophoneRecorder {
   }
 
   onStop() {
-    const blob = new Blob(chunks, { type: 'audio/wav' });
+    const blob = new Blob(chunks, { type: mediaOptions.mimeType });
     chunks = [];
 
     blobObject = {
@@ -123,6 +126,113 @@ export class MicrophoneRecorder {
     }
     if (onSaveCallback) {
       onSaveCallback(blobObject);
+    }
+  }
+}
+
+export class MicrophoneRecorderMp3 {
+  constructor(onStart, onStop, onSave, onData, options) {
+    onStartCallback = onStart;
+    onStopCallback = onStop;
+    onSaveCallback = onSave;
+    onDataCallback = onData;
+    mediaOptions = options;
+  }
+
+  startRecording = () => {
+    startTime = Date.now();
+
+    if (mediaRecorder) {
+      if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+
+      if (mediaRecorder && mediaRecorder.state === 'paused') {
+        mediaRecorder.resume();
+        return;
+      }
+
+      if (audioCtx && mediaRecorder && mediaRecorder.state === 'inactive') {
+        mediaRecorder.start(10);
+        const source = audioCtx.createMediaStreamSource(stream);
+        source.connect(analyser);
+        if (onStartCallback) {
+          onStartCallback();
+        }
+      }
+    } else if (navigator.mediaDevices) {
+      console.log('getUserMedia supported.');
+      navigator.mediaDevices
+        .getUserMedia(constraints)
+        .then(async str => {
+          stream = str;
+          const { recorderParams } = mediaOptions;
+          mediaRecorder = new Recorder({
+            wasmURL,
+            shimURL,
+            ...recorderParams,
+          });
+          
+          try {
+            await mediaRecorder.init();
+
+            if (onStartCallback) {
+              onStartCallback();
+            }
+            
+            audioCtx = AudioContext.getAudioContext();
+            audioCtx.resume().then(() => {
+              analyser = AudioContext.getAnalyser();
+              mediaRecorder.startRecording();
+              if (onDataCallback) setInterval(onDataCallback, 10);
+              const sourceNode = audioCtx.createMediaStreamSource(stream);
+              sourceNode.connect(analyser);
+            });
+          } catch (error) {
+            console.log(JSON.stringify(error, 2, null));
+          }
+        })
+        .catch(error => console.log(JSON.stringify(error, 2, null)));
+    } else {
+      alert('Your browser does not support audio recording');
+    }
+  };
+
+  stopRecording(blob) {
+    if (mediaRecorder) {
+      mediaRecorder.stopTracks();
+      AudioContext.resetAnalyser();
+      this.onStop();
+    }
+  }
+
+  onCleanUp() {
+    mediaRecorder.close();
+    mediaRecorder = null;
+    clearInterval(onDataCallback);
+  }
+
+  async onStop() {
+    try {
+      const blob = await mediaRecorder.stopRecording();
+
+      blobObject = {
+        blob,
+        startTime,
+        stopTime: Date.now(),
+        options: mediaOptions,
+        blobURL: window.URL.createObjectURL(blob),
+      };
+
+      this.onCleanUp();
+      if (onStopCallback) {
+        onStopCallback(blobObject);
+      }
+      if (onSaveCallback) {
+        onSaveCallback(blobObject);
+      }
+    } catch (error) {
+      console.log('onStop', JSON.stringify(error, 2, null));
     }
   }
 }

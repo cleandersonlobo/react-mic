@@ -5,8 +5,8 @@
 // http://stackoverflow.com/questions/22312841/waveshaper-node-in-webaudio-how-to-emulate-distortion
 
 import React, { Component }   from 'react'
-import { string, number, bool, func } from 'prop-types';
-import { MicrophoneRecorder } from '../libs/MicrophoneRecorder';
+import { string, number, bool, func, oneOf, object } from 'prop-types';
+import { MicrophoneRecorder, MicrophoneRecorderMp3 } from '../libs/MicrophoneRecorder';
 import AudioContext           from '../libs/AudioContext';
 import AudioPlayer            from '../libs/AudioPlayer';
 import VisualizerMain             from '../libs/Visualizer';
@@ -31,13 +31,19 @@ export default class ReactMic extends Component {
       onData,
       audioElem,
       audioBitsPerSecond,
-      mimeType
+      mimeType,
+      bufferSize,
+      recorderParams,
+      sampleRate
     } = this.props;
     const canvas = this.visualizer.current;
     const canvasCtx = canvas.getContext("2d");
     const options = {
       audioBitsPerSecond : audioBitsPerSecond,
-      mimeType           : mimeType
+      mimeType           : mimeType,
+      bufferSize         : bufferSize,
+      sampleRate         : sampleRate,
+      recorderParams     : recorderParams, 
     }
 
     if(audioElem) {
@@ -50,9 +56,9 @@ export default class ReactMic extends Component {
         this.visualize();
       });
     } else {
-
+      const Recorder = this.props.mimeType === 'audio/mp3' ? MicrophoneRecorderMp3 : MicrophoneRecorder;
       this.setState({
-        microphoneRecorder: new MicrophoneRecorder(
+        microphoneRecorder: new Recorder(
                               onStart,
                               onStop,
                               onSave,
@@ -118,8 +124,9 @@ ReactMic.propTypes = {
   record          : bool.isRequired,
   onStop          : func,
   onData          : func,
-  bufferSize      : PropTypes.number([0, 256, 512, 1024, 2048, 4096, 8192, 16384]),
-  sampleRate      : PropTypes.number,
+  bufferSize      : oneOf([0, 256, 512, 1024, 2048, 4096, 8192, 16384]),
+  sampleRate      : number,
+  recorderParams  : object,
 };
 
 ReactMic.defaultProps = {
@@ -133,5 +140,6 @@ ReactMic.defaultProps = {
   record            : false,
   width             : 640,
   height            : 100,
-  visualSetting     : 'sinewave'
+  visualSetting     : 'sinewave',
+  recorderParams    : {}
 }
