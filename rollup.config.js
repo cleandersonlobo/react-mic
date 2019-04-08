@@ -27,7 +27,12 @@ export default {
     postcss({
       modules: true
     }),
-    url(),
+    url({
+      limit: 100 * 100 * 1024,
+      include: [
+        '**/*.wasm'
+      ]
+    }),
     svgr(),
     babel({
       exclude: 'node_modules/**',
