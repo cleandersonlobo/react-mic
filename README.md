@@ -1,33 +1,31 @@
-# react-mic
+# @cleanderson/react-mic
 
-## Wrapper component for [react-mic](https://github.com/hackingbeauty/react-mic)
+### Wrapper component for [react-mic](https://github.com/hackingbeauty/react-mic)
+
 
 ## What's new - @cleandersonlobo/react-mic
 
-The Component audio format is supported in Safari browsers (including Safari on iOS). The Package has been updated to use the [MediaStreamRecorder](https://github.com/cleandersonlobo/MediaStreamRecorder) and by default it is writing with WAV.
+The Component audio format is supported in Safari browsers (including Safari on iOS). 
 
+The Package has been updated to use the [MediaStreamRecorder](https://github.com/cleandersonlobo/MediaStreamRecorder) to record WAV audio.
+
+The Package has been updated to use the [wasm-optimized](https://hackernoon.com/creating-webassembly-powered-library-for-modern-web-846da334f8fc) [vmsg](https://github.com/Kagami/vmsg) to record MP3 audio.
+
+
+- Supports WAV audio recording
+- Supports MP3 audio recording
 
 ## Problem to be solved.
 
-- Audio recorded by safari presents noises;
+- Audio recorded in **WAV** by safari presents noises;
 
-## README - [react-mic](https://github.com/hackingbeauty/react-mic)
 
-Record a user's voice and display as an oscillation.  Plug-n-play component for React apps. Audio is saved as [WebM](https://en.wikipedia.org/wiki/WebM) audio file format.
+## Demos [react-mic](https://github.com/hackingbeauty/react-mic)
 
-**PLEASE NOTE**: The WebM audio format is not supported in Safari browsers (including Safari on iOS).  You need to save an audio recording as a WAV file  in order to get full cross-browser and cross-device support.
-
-If you need a version of this React component that supports the WAV audio format so that you can record and play back audio recordings in *any* browser and mobile device (iOS + Android), you can purchase [React-Mic-Plus](https://react-mic-plus.professionalreactapp.com).  React-Mic-Plus also comes with an optional pause feature.
-
-Join the [Slack channel](https://publicslack.com/slacks/hackingbeauty/invites/new) if you have any questions or problems.
-
-Featured in the course ["How To Develop A Professional React App"](http://professionalreactapp.com).
-
-Works via the HTML5 MediaRecorder API ([currently only available in Chrome & Firefox](https://caniuse.com/#search=MediaRecorder)).
-
-## Demos
 
 Check out the [demo](https://www.voicerecordpro.com/#/record).
+
+**NOTE**: The above demo does not use this package
 
 ## Installation
 
@@ -35,11 +33,13 @@ Check out the [demo](https://www.voicerecordpro.com/#/record).
 
 ## Features
 
-- Record audio from microphone in Safari
+- Record audio from microphone
 - Display sound wave as voice is being recorded
 - Save audio as BLOB
 
 ## Usage
+
+## **AUDIO/WAV**
 
 ```js
 
@@ -51,14 +51,16 @@ Check out the [demo](https://www.voicerecordpro.com/#/record).
   onData={function}        // callback to execute when chunk of audio data is available
   strokeColor={string}     // sound wave color
   backgroundColor={string} // background color
-  mimeType={string}        // defaults -> audio/wav. 
+  mimeType={string}        // defaults -> audio/wav. Set audio/mp3 to switch to MP3
   bufferSize={number}      // defaults -> 2048. You can set following bufferSize values: 0, 256, 512, 1024, 2048, 4096, 8192, and 16384. 
   sampleRate={number}      // defaults -> 44100. It accepts values only in range: 22050 to 96000 
 />
 
 ```
 
-## Example
+## Example 
+
+# AUDIO/WAV
 
 ```js
 import { ReactMic } from 'react-mic';
@@ -102,6 +104,41 @@ export class Example extends React.Component {
           onData={this.onData}
           strokeColor="#000000"
           backgroundColor="#FF4081" />
+        <button onTouchTap={this.startRecording} type="button">Start</button>
+        <button onTouchTap={this.stopRecording} type="button">Stop</button>
+      </div>
+    );
+  }
+}
+```
+
+# AUDIO/MP3
+
+```js
+import { ReactMic } from 'react-mic';
+
+export class Example extends React.Component {
+  ...
+
+  onData() {
+    console.log('This function does not return an object, but is called at a time interval of 10ms');
+  }
+
+  onStop(recordedBlob) {
+    console.log('recordedBlob is: ', recordedBlob);
+  }
+
+  render() {
+    return (
+      <div>
+        <ReactMic
+          record={this.state.record}
+          className="sound-wave"
+          onStop={this.onStop}
+          onData={this.onData}
+          strokeColor="#000000"
+          backgroundColor="#FF4081" 
+          mimeType="audio/mp3" />
         <button onTouchTap={this.startRecording} type="button">Start</button>
         <button onTouchTap={this.stopRecording} type="button">Stop</button>
       </div>
