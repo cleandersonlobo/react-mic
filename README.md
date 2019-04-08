@@ -39,8 +39,6 @@ Check out the [demo](https://www.voicerecordpro.com/#/record).
 
 ## Usage
 
-## **AUDIO/WAV**
-
 ```js
 
 <ReactMic
