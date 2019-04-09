@@ -16,7 +16,7 @@ let onStartCallback;
 let onStopCallback;
 let onSaveCallback;
 let onDataCallback;
-
+let timeInterval;
 const shimURL = 'https://unpkg.com/wasm-polyfill.js@0.2.0/wasm-polyfill.js';
 const constraints = { audio: true }; // constraints - only audio needed
 
@@ -184,7 +184,9 @@ export class MicrophoneRecorderMp3 {
             audioCtx.resume().then(() => {
               analyser = AudioContext.getAnalyser();
               mediaRecorder.startRecording();
-              if (onDataCallback) setInterval(onDataCallback, 10);
+              if (onDataCallback) {
+                timeInterval = setInterval(onDataCallback, 10);
+              }
               const sourceNode = audioCtx.createMediaStreamSource(stream);
               sourceNode.connect(analyser);
             });
@@ -206,12 +208,6 @@ export class MicrophoneRecorderMp3 {
     }
   }
 
-  onCleanUp() {
-    mediaRecorder.close();
-    mediaRecorder = null;
-    clearInterval(onDataCallback);
-  }
-
   async onStop() {
     try {
       const blob = await mediaRecorder.stopRecording();
@@ -224,7 +220,10 @@ export class MicrophoneRecorderMp3 {
         blobURL: window.URL.createObjectURL(blob),
       };
 
-      this.onCleanUp();
+      mediaRecorder.close();
+      mediaRecorder = null;
+      clearInterval(timeInterval);
+
       if (onStopCallback) {
         onStopCallback(blobObject);
       }
