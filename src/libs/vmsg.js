@@ -292,7 +292,7 @@ export class Recorder {
 
   stopTracks() {
     // Might be missed in Safari and old FF/Chrome per MDN.
-    if (this.stream.getTracks) {
+    if (this.stream && this.stream.getTracks) {
       // Hide browser's recording indicator.
       this.stream.getTracks().forEach((track) => track.stop());
     }
