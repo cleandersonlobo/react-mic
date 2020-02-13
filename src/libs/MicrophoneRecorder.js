@@ -57,7 +57,7 @@ export class MicrophoneRecorder {
           onStartCallback()
         }
       }
-    } else if (navigator.mediaDevices) {
+    } else if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
       console.log('getUserMedia supported.')
       navigator.mediaDevices
         .getUserMedia(constraints)
@@ -161,7 +161,7 @@ export class MicrophoneRecorderMp3 {
           onStartCallback()
         }
       }
-    } else if (navigator.mediaDevices) {
+    } else if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
       console.log('getUserMedia supported.')
       navigator.mediaDevices
         .getUserMedia(constraints)
