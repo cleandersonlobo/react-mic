@@ -17,6 +17,7 @@ let onStartCallback
 let onStopCallback
 let onSaveCallback
 let onDataCallback
+let onUnmountCallback;
 let timeInterval
 const shimURL = 'https://unpkg.com/wasm-polyfill.js@0.2.0/wasm-polyfill.js'
 const constraints = { audio: true } // constraints - only audio needed
@@ -132,12 +133,13 @@ export class MicrophoneRecorder {
 }
 
 export class MicrophoneRecorderMp3 {
-  constructor(onStart, onStop, onSave, onData, options) {
+  constructor(onStart, onStop, onSave, onData, options, onUnmount) {
     onStartCallback = onStart
     onStopCallback = onStop
     onSaveCallback = onSave
     onDataCallback = onData
     mediaOptions = options
+    onUnmountCallback = onUnmount;
   }
 
   startRecording = () => {
@@ -201,17 +203,17 @@ export class MicrophoneRecorderMp3 {
     }
   };
 
-  stopRecording() {
+  stopRecording(callUnmount) {
     if (mediaRecorder) {
       stream.getAudioTracks().forEach(track => {
         track.stop()
       })
       AudioContext.resetAnalyser()
-      this.onStop()
+      this.onStop(callUnmount)
     }
   }
 
-  async onStop() {
+  async onStop(callUnmount) {
     try {
       const blob = await mediaRecorder.stopRecording()
 
@@ -227,12 +229,17 @@ export class MicrophoneRecorderMp3 {
       mediaRecorder = null
       clearInterval(timeInterval)
 
-      if (onStopCallback) {
+      if (onStopCallback && !callUnmount) {
         onStopCallback(blobObject)
       }
       if (onSaveCallback) {
         onSaveCallback(blobObject)
       }
+
+      if(onUnmountCallback && callUnmount) {
+        onUnmountCallback(blobObject);
+      }
+
     } catch (error) {
       console.log('onStop', JSON.stringify(error, 2, null))
     }

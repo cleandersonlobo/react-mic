@@ -34,7 +34,8 @@ export default class ReactMic extends Component {
       mimeType,
       bufferSize,
       recorderParams,
-      sampleRate
+      sampleRate,
+      onUnmount
     } = this.props
     const canvas = this.visualizer.current
     const canvasCtx = canvas.getContext('2d')
@@ -63,13 +64,22 @@ export default class ReactMic extends Component {
           onStop,
           onSave,
           onData,
-          options
+          options,
+          onUnmount
         ),
         canvas: canvas,
         canvasCtx: canvasCtx
       }, () => {
         this.visualize()
       })
+    }
+  }
+
+  componentWillUnmount = () => {
+    const {record} = this.props;
+    const {microphoneRecorder} = this.state;
+    if(record && microphoneRecorder) {
+      microphoneRecorder.stopRecording(true);
     }
   }
 
