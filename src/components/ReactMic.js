@@ -113,7 +113,7 @@ export default class ReactMic extends Component {
       }
     } else {
       if (microphoneRecorder) {
-        microphoneRecorder.stopRecording(onStop)
+        microphoneRecorder.stopRecording()
         if (this.drawer) {
           this.drawer()
         }
