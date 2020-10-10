@@ -162,6 +162,7 @@ export class Recorder {
     this.blobURL = null;
     this.resolve = null;
     this.reject = null;
+    this.isPaused = false;
     Object.seal(this);
   }
 
@@ -271,7 +272,11 @@ export class Recorder {
     this.reject = null;
     this.worker.postMessage({type: "start", data: this.audioCtx.sampleRate});
     this.encNode.onaudioprocess = (e) => {
+      if(this.isPaused) {
+        return false;
+      }
       const samples = e.inputBuffer.getChannelData(0);
+      console.log('samples', samples);
       this.worker.postMessage({type: "data", data: samples});
     };
     this.encNode.connect(this.audioCtx.destination);
@@ -282,6 +287,7 @@ export class Recorder {
     if (!this.worker) throw new Error("missing worker initialization");
     this.encNode.disconnect();
     this.encNode.onaudioprocess = null;
+    this.isPaused = false;
     this.stopTracks();
     this.worker.postMessage({type: "stop", data: null});
     return new Promise((resolve, reject) => {
@@ -297,6 +303,12 @@ export class Recorder {
       this.stream.getTracks().forEach((track) => track.stop());
     }
   }
+
+  togglePause = () => {
+    console.log('togglePause');
+    this.isPaused = !this.isPaused;
+  }
+
 }
 
 export class Form {

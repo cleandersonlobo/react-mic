@@ -244,4 +244,12 @@ export class MicrophoneRecorderMp3 {
       console.log('onStop', JSON.stringify(error, 2, null))
     }
   }
+
+  togglePause = () => {
+    console.log('togglePause::MICROPHONE')
+    if(mediaRecorder) {
+      mediaRecorder.togglePause();
+    }
+  }
+
 }
