@@ -86,6 +86,7 @@ export default class ReactMic extends Component {
   componentDidUpdate = (prevProps, prevState) => {
     const {isPaused, record} = this.props;
     if(prevProps.isPaused !== isPaused) {
+      const {microphoneRecorder} = this.state;
       if(record && microphoneRecorder) {
         microphoneRecorder.togglePause();
       }
