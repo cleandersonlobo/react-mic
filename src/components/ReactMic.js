@@ -83,6 +83,17 @@ export default class ReactMic extends Component {
     }
   }
 
+  componentDidUpdate = (prevProps, prevState) => {
+    console.log(prevProps, this.props);
+    const {isPaused, record} = this.props;
+    if(prevProps.isPaused !== isPaused) {
+      // if(record && microphoneRecorder) {
+      //   microphoneRecorder.toggleRecording();
+      // }
+      console.log("different");
+    }
+  }
+
   visualize() {
     const self = this
     const { backgroundColor, strokeColor, width, height, visualSetting } = this.props
@@ -137,7 +148,8 @@ ReactMic.propTypes = {
   onData: func,
   bufferSize: oneOf([0, 256, 512, 1024, 2048, 4096, 8192, 16384]),
   sampleRate: number,
-  recorderParams: object
+  recorderParams: object,
+  isPaused: bool
 }
 
 ReactMic.defaultProps = {
@@ -152,5 +164,6 @@ ReactMic.defaultProps = {
   width: 640,
   height: 100,
   visualSetting: 'sinewave',
-  recorderParams: {}
+  recorderParams: {},
+  isPaused: false
 }
