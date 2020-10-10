@@ -59,7 +59,6 @@ export class MicrophoneRecorder {
         }
       }
     } else if (navigator.mediaDevices) {
-      console.log('getUserMedia supported.')
       navigator.mediaDevices
         .getUserMedia(constraints)
         .then(str => {
@@ -164,7 +163,6 @@ export class MicrophoneRecorderMp3 {
         }
       }
     } else if (navigator.mediaDevices) {
-      console.log('getUserMedia supported.')
       navigator.mediaDevices
         .getUserMedia(constraints)
         .then(async str => {
@@ -246,7 +244,6 @@ export class MicrophoneRecorderMp3 {
   }
 
   togglePause = () => {
-    console.log('togglePause::MICROPHONE')
     if(mediaRecorder) {
       mediaRecorder.togglePause();
     }
