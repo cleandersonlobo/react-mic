@@ -355,7 +355,6 @@ export class Recorder {
         return false;
       }
       const samples = e.inputBuffer.getChannelData(0);
-      console.log(samples);
       this.worker.postMessage({ type: "data", data: samples });
     };
     this.encNode.connect(this.audioCtx.destination);
