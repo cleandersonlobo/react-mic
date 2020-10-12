@@ -168,7 +168,6 @@ function inlineWorker() {
               initial: TOTAL_MEMORY / WASM_PAGE_SIZE,
               maximum: TOTAL_MEMORY / WASM_PAGE_SIZE
             });
-            console.log(typeof memory.buffer);
             return {
               memory: memory,
               pow: Math.pow,
