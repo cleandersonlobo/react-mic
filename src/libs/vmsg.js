@@ -156,7 +156,6 @@ function inlineWorker() {
     switch (msg.type) {
       case "init":
         const { wasmURL, shimURL } = msg.data;
-        console.log(wasmURL, shimURL);
         Promise.resolve()
           .then(() => {
             if (self.WebAssembly && !testSafariWebAssemblyBug()) {
@@ -355,6 +354,7 @@ export class Recorder {
         return false;
       }
       const samples = e.inputBuffer.getChannelData(0);
+      console.log(samples);
       this.worker.postMessage({ type: "data", data: samples });
     };
     this.encNode.connect(this.audioCtx.destination);
