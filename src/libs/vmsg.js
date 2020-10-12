@@ -11,11 +11,17 @@ function inlineWorker() {
   // Though gzipped WASM module currently weights ~70kb so it should be
   // perfectly cached by the browser itself.
   function fetchAndInstantiate(url, imports) {
-    if (!WebAssembly.instantiateStreaming) return fetchAndInstantiateFallback(url, imports);
-    const req = fetch(url, {credentials: "same-origin"});
+    if (!WebAssembly.instantiateStreaming)
+      return fetchAndInstantiateFallback(url, imports);
+    const req = fetch(url, { credentials: "same-origin" });
     return WebAssembly.instantiateStreaming(req, imports).catch(err => {
       // https://github.com/Kagami/vmsg/issues/11
-      if (err.message && err.message.indexOf("Argument 0 must be provided and must be a Response") > 0) {
+      if (
+        err.message &&
+        err.message.indexOf(
+          "Argument 0 must be provided and must be a Response"
+        ) > 0
+      ) {
         return fetchAndInstantiateFallback(url, imports);
       } else {
         throw err;
@@ -52,7 +58,7 @@ function inlineWorker() {
   // to provide custom DEBUGF/ERRORF for easier debugging. Currenty
   // those functions do nothing.
   function exit(status) {
-    postMessage({type: "internal-error", data: status});
+    postMessage({ type: "internal-error", data: status });
   }
 
   let FFI = null;
@@ -74,7 +80,7 @@ function inlineWorker() {
     const mp3_ref = new Uint32Array(memory.buffer, ref + 4, 1)[0];
     const size = new Uint32Array(memory.buffer, ref + 8, 1)[0];
     const mp3 = new Uint8Array(memory.buffer, mp3_ref, size);
-    const blob = new Blob([mp3], {type: "audio/mpeg"});
+    const blob = new Blob([mp3], { type: "audio/mpeg" });
     FFI.vmsg_free(ref);
     ref = null;
     pcm_l = null;
@@ -83,62 +89,123 @@ function inlineWorker() {
 
   // https://github.com/brion/min-wasm-fail
   function testSafariWebAssemblyBug() {
-    const bin = new Uint8Array([0,97,115,109,1,0,0,0,1,6,1,96,1,127,1,127,3,2,1,0,5,3,1,0,1,7,8,1,4,116,101,115,116,0,0,10,16,1,14,0,32,0,65,1,54,2,0,32,0,40,2,0,11]);
+    const bin = new Uint8Array([
+      0,
+      97,
+      115,
+      109,
+      1,
+      0,
+      0,
+      0,
+      1,
+      6,
+      1,
+      96,
+      1,
+      127,
+      1,
+      127,
+      3,
+      2,
+      1,
+      0,
+      5,
+      3,
+      1,
+      0,
+      1,
+      7,
+      8,
+      1,
+      4,
+      116,
+      101,
+      115,
+      116,
+      0,
+      0,
+      10,
+      16,
+      1,
+      14,
+      0,
+      32,
+      0,
+      65,
+      1,
+      54,
+      2,
+      0,
+      32,
+      0,
+      40,
+      2,
+      0,
+      11
+    ]);
     const mod = new WebAssembly.Module(bin);
     const inst = new WebAssembly.Instance(mod, {});
     // test storing to and loading from a non-zero location via a parameter.
     // Safari on iOS 11.2.5 returns 0 unexpectedly at non-zero locations
-    return (inst.exports.test(4) !== 0);
+    return inst.exports.test(4) !== 0;
   }
 
-  onmessage = (e) => {
+  onmessage = e => {
     const msg = e.data;
     switch (msg.type) {
-    case "init":
-      const { wasmURL, shimURL } = msg.data;
-      Promise.resolve().then(() => {
-        if (self.WebAssembly && !testSafariWebAssemblyBug()) {
-          delete self.WebAssembly;
-        }
-        if (!self.WebAssembly) {
-          importScripts(shimURL);
-        }
-        memory = new WebAssembly.Memory({
-          initial: TOTAL_MEMORY / WASM_PAGE_SIZE,
-          maximum: TOTAL_MEMORY / WASM_PAGE_SIZE,
-        });
-        return {
-          memory: memory,
-          pow: Math.pow,
-          exit: exit,
-          powf: Math.pow,
-          exp: Math.exp,
-          sqrtf: Math.sqrt,
-          cos: Math.cos,
-          log: Math.log,
-          sin: Math.sin,
-          sbrk: sbrk,
-        };
-      }).then(Runtime => {
-        return fetchAndInstantiate(wasmURL, {env: Runtime})
-      }).then(wasm => {
-        FFI = wasm.instance.exports;
-        postMessage({type: "init", data: null});
-      }).catch(err => {
-        postMessage({type: "init-error", data: err.toString()});
-      });
-      break;
-    case "start":
-      if (!vmsg_init(msg.data)) return postMessage({type: "error", data: "vmsg_init"});
-      break;
-    case "data":
-      if (!vmsg_encode(msg.data)) return postMessage({type: "error", data: "vmsg_encode"});
-      break;
-    case "stop":
-      const blob = vmsg_flush();
-      if (!blob) return postMessage({type: "error", data: "vmsg_flush"});
-      postMessage({type: "stop", data: blob});
-      break;
+      case "init":
+        const { wasmURL, shimURL } = msg.data;
+        console.log(wasmURL, shimURL);
+        Promise.resolve()
+          .then(() => {
+            if (self.WebAssembly && !testSafariWebAssemblyBug()) {
+              delete self.WebAssembly;
+            }
+            if (!self.WebAssembly) {
+              importScripts(shimURL);
+            }
+            memory = new WebAssembly.Memory({
+              initial: TOTAL_MEMORY / WASM_PAGE_SIZE,
+              maximum: TOTAL_MEMORY / WASM_PAGE_SIZE
+            });
+            return {
+              memory: memory,
+              pow: Math.pow,
+              exit: exit,
+              powf: Math.pow,
+              exp: Math.exp,
+              sqrtf: Math.sqrt,
+              cos: Math.cos,
+              log: Math.log,
+              sin: Math.sin,
+              sbrk: sbrk
+            };
+          })
+          .then(Runtime => {
+            return fetchAndInstantiate(wasmURL, { env: Runtime });
+          })
+          .then(wasm => {
+            FFI = wasm.instance.exports;
+            postMessage({ type: "init", data: null });
+          })
+          .catch(err => {
+            postMessage({ type: "init-error", data: err.toString() });
+          });
+        break;
+      case "start":
+        if (!vmsg_init(msg.data))
+          return postMessage({ type: "error", data: "vmsg_init" });
+        break;
+      case "data":
+        if (!vmsg_encode(msg.data))
+          return postMessage({ type: "error", data: "vmsg_encode" });
+        break;
+      case "stop":
+        const blob = vmsg_flush();
+        if (!blob) return postMessage({ type: "error", data: "vmsg_flush" });
+        postMessage({ type: "stop", data: blob });
+        break;
     }
   };
 }
@@ -147,8 +214,14 @@ export class Recorder {
   constructor(opts = {}, onStop = null) {
     // Can't use relative URL in blob worker, see:
     // https://stackoverflow.com/a/22582695
-    this.wasmURL = new URL(opts.wasmURL || "/static/js/vmsg.wasm", location).href;
-    this.shimURL = new URL(opts.shimURL || "/static/js/wasm-polyfill.js", location).href;
+    this.wasmURL = new URL(
+      opts.wasmURL || "/static/js/vmsg.wasm",
+      location
+    ).href;
+    this.shimURL = new URL(
+      opts.shimURL || "/static/js/wasm-polyfill.js",
+      location
+    ).href;
     this.onStop = onStop;
     this.pitch = opts.pitch || 0;
     this.stream = null;
@@ -185,36 +258,42 @@ export class Recorder {
   //                                                  |
   //                                                  -> [worker]
   initAudio() {
-    const getUserMedia = navigator.mediaDevices && navigator.mediaDevices.getUserMedia
-      ? function(constraints) {
-          return navigator.mediaDevices.getUserMedia(constraints);
-        }
-      : function(constraints) {
-          const oldGetUserMedia = navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
-          if (!oldGetUserMedia) {
-            return Promise.reject(new Error("getUserMedia is not implemented in this browser"));
+    const getUserMedia =
+      navigator.mediaDevices && navigator.mediaDevices.getUserMedia
+        ? function(constraints) {
+            return navigator.mediaDevices.getUserMedia(constraints);
           }
-          return new Promise(function(resolve, reject) {
-            oldGetUserMedia.call(navigator, constraints, resolve, reject);
-          });
-        };
+        : function(constraints) {
+            const oldGetUserMedia =
+              navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+            if (!oldGetUserMedia) {
+              return Promise.reject(
+                new Error("getUserMedia is not implemented in this browser")
+              );
+            }
+            return new Promise(function(resolve, reject) {
+              oldGetUserMedia.call(navigator, constraints, resolve, reject);
+            });
+          };
 
-    return getUserMedia({audio: true}).then((stream) => {
+    return getUserMedia({ audio: true }).then(stream => {
       this.stream = stream;
-      const audioCtx = this.audioCtx = new (window.AudioContext
-        || window.webkitAudioContext)();
+      const audioCtx = (this.audioCtx = new (window.AudioContext ||
+        window.webkitAudioContext)());
 
       const sourceNode = audioCtx.createMediaStreamSource(stream);
-      const gainNode = this.gainNode = (audioCtx.createGain
-        || audioCtx.createGainNode).call(audioCtx);
+      const gainNode = (this.gainNode = (
+        audioCtx.createGain || audioCtx.createGainNode
+      ).call(audioCtx));
       gainNode.gain.value = 1;
       sourceNode.connect(gainNode);
 
-      const pitchFX = this.pitchFX = new Jungle(audioCtx);
+      const pitchFX = (this.pitchFX = new Jungle(audioCtx));
       pitchFX.setPitchOffset(this.pitch);
 
-      const encNode = this.encNode = (audioCtx.createScriptProcessor
-        || audioCtx.createJavaScriptNode).call(audioCtx, 0, 1, 1);
+      const encNode = (this.encNode = (
+        audioCtx.createScriptProcessor || audioCtx.createJavaScriptNode
+      ).call(audioCtx, 0, 1, 1));
       pitchFX.output.connect(encNode);
 
       gainNode.connect(this.pitch === 0 ? encNode : pitchFX.input);
@@ -224,37 +303,37 @@ export class Recorder {
   initWorker() {
     if (!this.stream) throw new Error("missing audio initialization");
     // https://stackoverflow.com/a/19201292
-    const blob = new Blob(
-      ["(", inlineWorker.toString(), ")()"],
-      {type: "application/javascript"});
-    const workerURL = this.workerURL = URL.createObjectURL(blob);
-    const worker = this.worker = new Worker(workerURL);
+    const blob = new Blob(["(", inlineWorker.toString(), ")()"], {
+      type: "application/javascript"
+    });
+    const workerURL = (this.workerURL = URL.createObjectURL(blob));
+    const worker = (this.worker = new Worker(workerURL));
     const { wasmURL, shimURL } = this;
-    worker.postMessage({type: "init", data: {wasmURL, shimURL}});
+    worker.postMessage({ type: "init", data: { wasmURL, shimURL } });
     return new Promise((resolve, reject) => {
-      worker.onmessage = (e) => {
+      worker.onmessage = e => {
         const msg = e.data;
         switch (msg.type) {
-        case "init":
-          resolve();
-          break;
-        case "init-error":
-          reject(new Error(msg.data));
-          break;
-        // TODO(Kagami): Error handling.
-        case "error":
-        case "internal-error":
-          console.error("Worker error:", msg.data);
-          if (this.reject) this.reject(msg.data);
-          break;
-        case "stop":
-          this.blob = msg.data;
-          this.blobURL = URL.createObjectURL(msg.data);
-          if (this.onStop) this.onStop();
-          if (this.resolve) this.resolve(this.blob);
-          break;
+          case "init":
+            resolve();
+            break;
+          case "init-error":
+            reject(new Error(msg.data));
+            break;
+          // TODO(Kagami): Error handling.
+          case "error":
+          case "internal-error":
+            console.error("Worker error:", msg.data);
+            if (this.reject) this.reject(msg.data);
+            break;
+          case "stop":
+            this.blob = msg.data;
+            this.blobURL = URL.createObjectURL(msg.data);
+            if (this.onStop) this.onStop();
+            if (this.resolve) this.resolve(this.blob);
+            break;
         }
-      }
+      };
     });
   }
 
@@ -270,13 +349,13 @@ export class Recorder {
     this.blobURL = null;
     this.resolve = null;
     this.reject = null;
-    this.worker.postMessage({type: "start", data: this.audioCtx.sampleRate});
-    this.encNode.onaudioprocess = (e) => {
-      if(this.isPaused) {
+    this.worker.postMessage({ type: "start", data: this.audioCtx.sampleRate });
+    this.encNode.onaudioprocess = e => {
+      if (this.isPaused) {
         return false;
       }
       const samples = e.inputBuffer.getChannelData(0);
-      this.worker.postMessage({type: "data", data: samples});
+      this.worker.postMessage({ type: "data", data: samples });
     };
     this.encNode.connect(this.audioCtx.destination);
   }
@@ -288,7 +367,7 @@ export class Recorder {
     this.encNode.onaudioprocess = null;
     this.isPaused = false;
     this.stopTracks();
-    this.worker.postMessage({type: "stop", data: null});
+    this.worker.postMessage({ type: "stop", data: null });
     return new Promise((resolve, reject) => {
       this.resolve = resolve;
       this.reject = reject;
@@ -299,14 +378,13 @@ export class Recorder {
     // Might be missed in Safari and old FF/Chrome per MDN.
     if (this.stream && this.stream.getTracks) {
       // Hide browser's recording indicator.
-      this.stream.getTracks().forEach((track) => track.stop());
+      this.stream.getTracks().forEach(track => track.stop());
     }
   }
 
   togglePause = () => {
     this.isPaused = !this.isPaused;
-  }
-
+  };
 }
 
 export class Form {
@@ -325,22 +403,23 @@ export class Form {
     this.start = 0;
     Object.seal(this);
 
-    this.recorder.initAudio()
+    this.recorder
+      .initAudio()
       .then(() => this.drawInit())
       .then(() => this.recorder.initWorker())
       .then(() => this.drawAll())
-      .catch((err) => this.drawError(err));
+      .catch(err => this.drawError(err));
   }
 
   drawInit() {
     if (this.backdrop) return;
-    const backdrop = this.backdrop = document.createElement("div");
+    const backdrop = (this.backdrop = document.createElement("div"));
     backdrop.className = "vmsg-backdrop";
     backdrop.addEventListener("click", () => this.close(null));
 
-    const popup = this.popup = document.createElement("div");
+    const popup = (this.popup = document.createElement("div"));
     popup.className = "vmsg-popup";
-    popup.addEventListener("click", (e) => e.stopPropagation());
+    popup.addEventListener("click", e => e.stopPropagation());
 
     const progress = document.createElement("div");
     progress.className = "vmsg-progress";
@@ -368,23 +447,23 @@ export class Form {
     recordRow.className = "vmsg-record-row";
     this.popup.appendChild(recordRow);
 
-    const recordBtn = this.recordBtn = document.createElement("button");
+    const recordBtn = (this.recordBtn = document.createElement("button"));
     recordBtn.className = "vmsg-button vmsg-record-button";
     recordBtn.textContent = "●";
     recordBtn.addEventListener("click", () => this.startRecording());
     recordRow.appendChild(recordBtn);
 
-    const stopBtn = this.stopBtn = document.createElement("button");
+    const stopBtn = (this.stopBtn = document.createElement("button"));
     stopBtn.className = "vmsg-button vmsg-stop-button";
     stopBtn.style.display = "none";
     stopBtn.textContent = "■";
     stopBtn.addEventListener("click", () => this.stopRecording());
     recordRow.appendChild(stopBtn);
 
-    const audio = this.audio = new Audio();
+    const audio = (this.audio = new Audio());
     audio.autoplay = true;
 
-    const timer = this.timer = document.createElement("span");
+    const timer = (this.timer = document.createElement("span"));
     timer.className = "vmsg-timer";
     timer.addEventListener("click", () => {
       if (audio.paused) {
@@ -398,7 +477,7 @@ export class Form {
     this.drawTime(0);
     recordRow.appendChild(timer);
 
-    const saveBtn = this.saveBtn = document.createElement("button");
+    const saveBtn = (this.saveBtn = document.createElement("button"));
     saveBtn.className = "vmsg-button vmsg-save-button";
     saveBtn.textContent = "✓";
     saveBtn.disabled = true;
@@ -519,14 +598,17 @@ export function record(opts) {
     if (shown) throw new Error("Record form is already opened");
     shown = true;
     new Form(opts, resolve, reject);
-  // Use `.finally` once it's available in Safari and Edge.
-  }).then(result => {
-    shown = false;
-    return result;
-  }, err => {
-    shown = false;
-    throw err;
-  });
+    // Use `.finally` once it's available in Safari and Edge.
+  }).then(
+    result => {
+      shown = false;
+      return result;
+    },
+    err => {
+      shown = false;
+      throw err;
+    }
+  );
 }
 
 /**
@@ -566,13 +648,13 @@ export default { Recorder, Form, record };
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-const delayTime = 0.100;
-const fadeTime = 0.050;
-const bufferTime = 0.100;
+const delayTime = 0.1;
+const fadeTime = 0.05;
+const bufferTime = 0.1;
 
 function createFadeBuffer(context, activeTime, fadeTime) {
   var length1 = activeTime * context.sampleRate;
-  var length2 = (activeTime - 2*fadeTime) * context.sampleRate;
+  var length2 = (activeTime - 2 * fadeTime) * context.sampleRate;
   var length = length1 + length2;
   var buffer = context.createBuffer(1, length, context.sampleRate);
   var p = buffer.getChannelData(0);
@@ -587,11 +669,11 @@ function createFadeBuffer(context, activeTime, fadeTime) {
     var value;
 
     if (i < fadeIndex1) {
-        value = Math.sqrt(i / fadeLength);
+      value = Math.sqrt(i / fadeLength);
     } else if (i >= fadeIndex2) {
-        value = Math.sqrt(1 - (i - fadeIndex2) / fadeLength);
+      value = Math.sqrt(1 - (i - fadeIndex2) / fadeLength);
     } else {
-        value = 1;
+      value = 1;
     }
 
     p[i] = value;
@@ -607,7 +689,7 @@ function createFadeBuffer(context, activeTime, fadeTime) {
 
 function createDelayTimeBuffer(context, activeTime, fadeTime, shiftUp) {
   var length1 = activeTime * context.sampleRate;
-  var length2 = (activeTime - 2*fadeTime) * context.sampleRate;
+  var length2 = (activeTime - 2 * fadeTime) * context.sampleRate;
   var length = length1 + length2;
   var buffer = context.createBuffer(1, length, context.sampleRate);
   var p = buffer.getChannelData(0);
@@ -616,10 +698,9 @@ function createDelayTimeBuffer(context, activeTime, fadeTime, shiftUp) {
   for (var i = 0; i < length1; ++i) {
     if (shiftUp)
       // This line does shift-up transpose
-      p[i] = (length1-i)/length;
-    else
-      // This line does shift-down transpose
-      p[i] = i / length1;
+      p[i] = (length1 - i) / length;
+    // This line does shift-down transpose
+    else p[i] = i / length1;
   }
 
   // 2nd part
@@ -643,8 +724,18 @@ function Jungle(context) {
   var mod2 = context.createBufferSource();
   var mod3 = context.createBufferSource();
   var mod4 = context.createBufferSource();
-  this.shiftDownBuffer = createDelayTimeBuffer(context, bufferTime, fadeTime, false);
-  this.shiftUpBuffer = createDelayTimeBuffer(context, bufferTime, fadeTime, true);
+  this.shiftDownBuffer = createDelayTimeBuffer(
+    context,
+    bufferTime,
+    fadeTime,
+    false
+  );
+  this.shiftUpBuffer = createDelayTimeBuffer(
+    context,
+    bufferTime,
+    fadeTime,
+    true
+  );
   mod1.buffer = this.shiftDownBuffer;
   mod2.buffer = this.shiftDownBuffer;
   mod3.buffer = this.shiftUpBuffer;
@@ -684,7 +775,7 @@ function Jungle(context) {
   var fade1 = context.createBufferSource();
   var fade2 = context.createBufferSource();
   var fadeBuffer = createFadeBuffer(context, bufferTime, fadeTime);
-  fade1.buffer = fadeBuffer
+  fade1.buffer = fadeBuffer;
   fade2.buffer = fadeBuffer;
   fade1.loop = true;
   fade2.loop = true;
@@ -706,7 +797,7 @@ function Jungle(context) {
   mix2.connect(output);
 
   // Start
-  var t = context.currentTime + 0.050;
+  var t = context.currentTime + 0.05;
   var t2 = t + bufferTime - fadeTime;
   mod1.start(t);
   mod2.start(t2);
@@ -734,21 +825,23 @@ function Jungle(context) {
 }
 
 Jungle.prototype.setDelay = function(delayTime) {
-  this.modGain1.gain.setTargetAtTime(0.5*delayTime, 0, 0.010);
-  this.modGain2.gain.setTargetAtTime(0.5*delayTime, 0, 0.010);
+  this.modGain1.gain.setTargetAtTime(0.5 * delayTime, 0, 0.01);
+  this.modGain2.gain.setTargetAtTime(0.5 * delayTime, 0, 0.01);
 };
 
 Jungle.prototype.setPitchOffset = function(mult) {
-  if (mult>0) { // pitch up
+  if (mult > 0) {
+    // pitch up
     this.mod1Gain.gain.value = 0;
     this.mod2Gain.gain.value = 0;
     this.mod3Gain.gain.value = 1;
     this.mod4Gain.gain.value = 1;
-  } else { // pitch down
+  } else {
+    // pitch down
     this.mod1Gain.gain.value = 1;
     this.mod2Gain.gain.value = 1;
     this.mod3Gain.gain.value = 0;
     this.mod4Gain.gain.value = 0;
   }
-  this.setDelay(delayTime*Math.abs(mult));
+  this.setDelay(delayTime * Math.abs(mult));
 };
