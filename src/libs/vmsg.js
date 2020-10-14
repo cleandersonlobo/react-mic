@@ -350,15 +350,16 @@ export class Recorder {
     this.resolve = null;
     this.reject = null;
     this.worker.postMessage({ type: "start", data: this.audioCtx.sampleRate });
+    if (this.draftAudioBuffer) {
+      console.log(this.draftAudioBuffer);
+      const samples = this.draftAudioBuffer.getChannelData(0);
+      console.log(samples);
+      this.worker.postMessage({ type: "data", data: samples });
+      this.draftAudioBuffer = null;
+    }
     this.encNode.onaudioprocess = e => {
       if (this.isPaused) {
         return false;
-      }
-      if (this.draftAudioBuffer) {
-        console.log(this.draftAudioBuffer);
-        const samples = this.draftAudioBuffer.getChannelData(0);
-        this.worker.postMessage({ type: "data", data: samples });
-        this.draftAudioBuffer = null;
       }
       const samples = e.inputBuffer.getChannelData(0);
       this.worker.postMessage({ type: "data", data: samples });
