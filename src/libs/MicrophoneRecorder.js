@@ -280,6 +280,6 @@ const convertBlobToAudioBuffer = blob => {
       let arrayBuffer = fileReader.result;
       audioContext.decodeAudioData(arrayBuffer, resolve, reject);
     };
-    fileReader.readAsArrayBuffer(myBlob);
+    fileReader.readAsArrayBuffer(blob);
   });
 };
