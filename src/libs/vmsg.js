@@ -351,10 +351,12 @@ export class Recorder {
     this.reject = null;
     this.worker.postMessage({ type: "start", data: this.audioCtx.sampleRate });
     if (this.draftAudioBuffer) {
-      console.log(this.draftAudioBuffer);
       const samples = this.draftAudioBuffer.getChannelData(0);
-      console.log(samples);
-      this.worker.postMessage({ type: "data", data: samples });
+      const chunkSize = 256;
+      for (let i = 0; i < samples.length; i += chunkSize) {
+        const subSample = samples.slice(i, i + chunkSize);
+        this.worker.postMessage({ type: "data", data: subSample });
+      }
       this.draftAudioBuffer = null;
     }
     this.encNode.onaudioprocess = e => {
