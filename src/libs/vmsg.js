@@ -361,6 +361,7 @@ export class Recorder {
     }
     this.encNode.onaudioprocess = e => {
       if (this.isPaused) {
+        console.log("isPaused");
         return false;
       }
       const samples = e.inputBuffer.getChannelData(0);
