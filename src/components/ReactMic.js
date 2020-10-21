@@ -85,10 +85,13 @@ export default class ReactMic extends Component {
         },
         () => {
           this.visualize();
+          const { isPaused } = this.props;
+          console.log(isPaused);
           if (isPaused) {
             const { record } = this.props;
             const { microphoneRecorder } = this.state;
             if (record && microphoneRecorder) {
+              console.log(record, microphoneRecorder);
               microphoneRecorder.togglePause();
             }
           }
