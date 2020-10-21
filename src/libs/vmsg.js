@@ -210,7 +210,7 @@ function inlineWorker() {
 }
 
 export class Recorder {
-  constructor(opts = {}, onStop = null, draftAudioBuffer) {
+  constructor(opts = {}, onStop = null, draftAudioBuffer, isPaused) {
     // Can't use relative URL in blob worker, see:
     // https://stackoverflow.com/a/22582695
     this.wasmURL = new URL(
@@ -234,7 +234,7 @@ export class Recorder {
     this.blobURL = null;
     this.resolve = null;
     this.reject = null;
-    this.isPaused = false;
+    this.isPaused = isPaused;
     this.draftAudioBuffer = draftAudioBuffer;
     Object.seal(this);
   }

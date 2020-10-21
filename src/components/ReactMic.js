@@ -39,7 +39,8 @@ export default class ReactMic extends Component {
       recorderParams,
       sampleRate,
       onUnmount,
-      draftRecordingBlob
+      draftRecordingBlob,
+      isPaused
     } = this.props;
     const canvas = this.visualizer.current;
     const canvasCtx = canvas.getContext("2d");
@@ -75,7 +76,8 @@ export default class ReactMic extends Component {
             onData,
             options,
             onUnmount,
-            draftRecordingBlob
+            draftRecordingBlob,
+            isPaused
           ),
           canvas: canvas,
           canvasCtx: canvasCtx
@@ -97,10 +99,12 @@ export default class ReactMic extends Component {
 
   componentDidUpdate = (prevProps, prevState) => {
     const { isPaused, record } = this.props;
-    console.log(isPaused);
-    const { microphoneRecorder } = this.state;
-    if (record && microphoneRecorder) {
-      microphoneRecorder.setPause(isPaused);
+    if (prevProps.isPaused !== isPaused) {
+      console.log(isPaused);
+      const { microphoneRecorder } = this.state;
+      if (record && microphoneRecorder) {
+        microphoneRecorder.togglePause();
+      }
     }
   };
 

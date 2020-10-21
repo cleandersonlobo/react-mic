@@ -19,6 +19,7 @@ let onSaveCallback;
 let onDataCallback;
 let onUnmountCallback;
 let draftRecordingBlobObject;
+let isPausedBool;
 let timeInterval;
 const shimURL = "https://unpkg.com/wasm-polyfill.js@0.2.0/wasm-polyfill.js";
 const constraints = { audio: true }; // constraints - only audio needed
@@ -140,7 +141,8 @@ export class MicrophoneRecorderMp3 {
     onData,
     options,
     onUnmount,
-    draftRecordingBlob
+    draftRecordingBlob,
+    isPaused
   ) {
     onStartCallback = onStart;
     onStopCallback = onStop;
@@ -149,6 +151,7 @@ export class MicrophoneRecorderMp3 {
     mediaOptions = options;
     onUnmountCallback = onUnmount;
     draftRecordingBlobObject = draftRecordingBlob;
+    isPausedBool = isPaused;
   }
 
   startRecording = () => {
@@ -187,7 +190,8 @@ export class MicrophoneRecorderMp3 {
                   ...recorderParams
                 },
                 null,
-                audioBuffer
+                audioBuffer,
+                isPausedBool
               );
               try {
                 await mediaRecorder.init();
