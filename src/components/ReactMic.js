@@ -157,7 +157,7 @@ export default class ReactMic extends Component {
   render() {
     const { record, onStop, width, height } = this.props;
     const { microphoneRecorder, canvasCtx } = this.state;
-
+    console.log(this.props.isPaused);
     if (record) {
       if (microphoneRecorder) {
         microphoneRecorder.startRecording();
