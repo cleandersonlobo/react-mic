@@ -262,8 +262,14 @@ export class MicrophoneRecorderMp3 {
   }
 
   togglePause = () => {
-    if (mediaRecorder) {
+    if (mediaRecorder && mediaRecorder.togglePause) {
       mediaRecorder.togglePause();
+    }
+  };
+
+  setPause = value => {
+    if (mediaRecorder && mediaRecorder.setPause) {
+      mediaRecorder.setPause(value);
     }
   };
 }

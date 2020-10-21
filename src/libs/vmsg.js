@@ -395,6 +395,10 @@ export class Recorder {
   togglePause = () => {
     this.isPaused = !this.isPaused;
   };
+
+  setPause = value => {
+    this.isPaused = value;
+  };
 }
 
 export class Form {
