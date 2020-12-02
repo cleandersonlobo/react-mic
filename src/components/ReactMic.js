@@ -1,4 +1,4 @@
-// cool blog article on how to do this: http://www.smartjava.org/content/exploring-html5-web-audio-visualizing-sound
+// cool blog article on how to do this: https://web.archive.org/web/20160307143921/http://www.smartjava.org/content/exploring-html5-web-audio-visualizing-sound
 // https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API/Visualizations_with_Web_Audio_API
 
 // distortion curve for the waveshaper, thanks to Kevin Ennis
